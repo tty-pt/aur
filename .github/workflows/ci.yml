@@ -1,0 +1,107 @@
+name: Build and Publish All AUR Packages
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  environment:
+    uses: tty-pt/ci/.github/workflows/aur.yml@msys
+    with:
+      name: 'mingw-w64-environment'
+    secrets: &aur_secrets
+      HOST: ${{ secrets.OPENBSD_HOST }}
+      USER: ${{ secrets.OPENBSD_USER }}
+      SSH_KEY: ${{ secrets.OPENBSD_SSH_KEY }}
+      GPG_PRIVATE_KEY: ${{ secrets.OPENBSD_GPG_PRIVATE_KEY }}
+      GPG_KEYID: ${{ secrets.OPENBSD_GPG_KEY_ID }}
+      GPG_PASSPHRASE: ${{ secrets.OPENBSD_GPG_PASSPHRASE }}
+
+  make:
+    needs: environment
+    uses: tty-pt/ci/.github/workflows/aur.yml@msys
+    with:
+      name: 'mingw-w64-make'
+      deps: 'mingw-w64-environment'
+    secrets: *aur_secrets
+
+  gcc-base:
+    uses: tty-pt/ci/.github/workflows/aur.yml@msys
+    with:
+      name: 'mingw-w64-gcc-base'
+    secrets: *aur_secrets
+
+  headers:
+    uses: tty-pt/ci/.github/workflows/aur.yml@msys
+    with:
+      name: 'mingw-w64-headers'
+    secrets: *aur_secrets
+
+  crt:
+    needs: [gcc-base, headers]
+    uses: tty-pt/ci/.github/workflows/aur.yml@msys
+    with:
+      name: 'mingw-w64-crt'
+      deps: 'mingw-w64-gcc-base,mingw-w64-headers'
+    secrets: *aur_secrets
+
+  xxhash:
+    needs: [make, crt]
+    uses: tty-pt/ci/.github/workflows/aur.yml@msys
+    with:
+      name: 'mingw-w64-xxhash'
+      deps: 'mingw-w64-make,mingw-w64-crt'
+    secrets: *aur_secrets
+
+  pkg-config:
+    uses: tty-pt/ci/.github/workflows/aur.yml@msys
+    with:
+      name: 'mingw-w64-pkg-config'
+    secrets: *aur_secrets
+
+  configure:
+    needs: [environment, pkg-config]
+    uses: tty-pt/ci/.github/workflows/aur.yml@msys
+    with:
+      name: 'mingw-w64-configure'
+      deps: 'mingw-w64-pkg-config,mingw-w64-environment'
+    secrets: *aur_secrets
+
+  libpng:
+    needs:
+      configure
+    uses: tty-pt/ci/.github/workflows/aur.yml@msys
+    with:
+      name: 'mingw-w64-libpng'
+      deps: 'mingw-w64-configure'
+    secrets: *aur_secrets
+
+  cmake:
+    needs: [environment, pkg-config]
+    uses: tty-pt/ci/.github/workflows/aur.yml@msys
+    with:
+      name: 'mingw-w64-cmake'
+      deps: 'mingw-w64-environment,mingw-w64-pkg-config'
+    secrets: *aur_secrets
+
+  glfw:
+    needs: cmake
+    uses: tty-pt/ci/.github/workflows/aur.yml@msys
+    with:
+      name: 'mingw-w64-glfw'
+      deps: 'mingw-w64-cmake'
+    secrets: *aur_secrets
+
+  py-ldd:
+    uses: tty-pt/ci/.github/workflows/aur.yml@msys
+    with:
+      name: 'python-mingw-ldd'
+    secrets: *aur_secrets
+
+  ntldd:
+    needs: py-ldd
+    uses: tty-pt/ci/.github/workflows/aur.yml@msys
+    with:
+      name: 'mingw-w64-ldd'
+      deps: 'python-mingw-ldd'
+    secrets: *aur_secrets
