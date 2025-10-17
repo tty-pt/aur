@@ -25,28 +25,8 @@ jobs:
       deps: 'mingw-w64-environment'
     secrets: *aur_secrets
 
-  gcc-base:
-    uses: tty-pt/ci/.github/workflows/aur.yml@msys
-    with:
-      name: 'mingw-w64-gcc-base'
-    secrets: *aur_secrets
-
-  headers:
-    uses: tty-pt/ci/.github/workflows/aur.yml@msys
-    with:
-      name: 'mingw-w64-headers'
-    secrets: *aur_secrets
-
-  crt:
-    needs: [gcc-base, headers]
-    uses: tty-pt/ci/.github/workflows/aur.yml@msys
-    with:
-      name: 'mingw-w64-crt'
-      deps: 'mingw-w64-gcc-base,mingw-w64-headers'
-    secrets: *aur_secrets
-
   xxhash:
-    needs: [make, crt]
+    needs: [make]
     uses: tty-pt/ci/.github/workflows/aur.yml@msys
     with:
       name: 'mingw-w64-xxhash'
