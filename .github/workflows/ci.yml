@@ -67,13 +67,18 @@ jobs:
       deps: 'mingw-w64-pkg-config,mingw-w64-environment'
     secrets: *aur_secrets
 
+  zlib:
+    uses: tty-pt/ci/.github/workflows/aur.yml@msys
+    with:
+      name: 'mingw-w64-zlib'
+    secrets: *aur_secrets
+
   libpng:
-    needs:
-      configure
+    needs: [configure, zlib]
     uses: tty-pt/ci/.github/workflows/aur.yml@msys
     with:
       name: 'mingw-w64-libpng'
-      deps: 'mingw-w64-configure'
+      deps: 'mingw-w64-configure,mingw-w64-zlib'
     secrets: *aur_secrets
 
   cmake:
