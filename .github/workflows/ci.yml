@@ -6,7 +6,7 @@ on:
 
 jobs:
   environment:
-    uses: tty-pt/ci/.github/workflows/aur.yml@msys
+    uses: tty-pt/ci/.github/workflows/aur.yml@main
     with:
       name: 'mingw-w64-environment'
     secrets: &aur_secrets
@@ -19,63 +19,74 @@ jobs:
 
   make:
     needs: environment
-    uses: tty-pt/ci/.github/workflows/aur.yml@msys
+    uses: tty-pt/ci/.github/workflows/aur.yml@main
     with:
       name: 'mingw-w64-make'
       deps: 'mingw-w64-environment'
     secrets: *aur_secrets
 
-  gcc-base:
-    uses: tty-pt/ci/.github/workflows/aur.yml@msys
-    with:
-      name: 'mingw-w64-gcc-base'
-    secrets: *aur_secrets
-
-  headers:
-    uses: tty-pt/ci/.github/workflows/aur.yml@msys
-    with:
-      name: 'mingw-w64-headers'
-    secrets: *aur_secrets
-
-  crt:
-    needs: [gcc-base, headers]
-    uses: tty-pt/ci/.github/workflows/aur.yml@msys
-    with:
-      name: 'mingw-w64-crt'
-      deps: 'mingw-w64-gcc-base,mingw-w64-headers'
-    secrets: *aur_secrets
-
   xxhash:
-    needs: [make, crt]
-    uses: tty-pt/ci/.github/workflows/aur.yml@msys
+    needs: [make]
+    uses: tty-pt/ci/.github/workflows/aur.yml@main
     with:
       name: 'mingw-w64-xxhash'
       deps: 'mingw-w64-make,mingw-w64-crt'
     secrets: *aur_secrets
 
   pkg-config:
-    uses: tty-pt/ci/.github/workflows/aur.yml@msys
+    uses: tty-pt/ci/.github/workflows/aur.yml@main
     with:
       name: 'mingw-w64-pkg-config'
     secrets: *aur_secrets
 
   configure:
     needs: [environment, pkg-config]
-    uses: tty-pt/ci/.github/workflows/aur.yml@msys
+    uses: tty-pt/ci/.github/workflows/aur.yml@main
     with:
       name: 'mingw-w64-configure'
       deps: 'mingw-w64-pkg-config,mingw-w64-environment'
     secrets: *aur_secrets
 
+  termcap:
+    needs: [configure]
+    uses: tty-pt/ci/.github/workflows/aur.yml@main
+    with:
+      name: 'mingw-w64-termcap'
+      deps: 'mingw-w64-configure,mingw-w64-crt'
+    secrets: *aur_secrets
+
+  libiconv:
+    needs: [configure]
+    uses: tty-pt/ci/.github/workflows/aur.yml@main
+    with:
+      name: 'mingw-w64-libiconv'
+      deps: 'mingw-w64-configure,mingw-w64-crt'
+    secrets: *aur_secrets
+
+  libunistring:
+    needs: [configure, libiconv]
+    uses: tty-pt/ci/.github/workflows/aur.yml@main
+    with:
+      name: 'mingw-w64-libunistring'
+      deps: 'mingw-w64-configure,mingw-w64-crt,mingw-w64-libiconv'
+    secrets: *aur_secrets
+
+  gettext:
+    needs: [configure, libunistring, termcap]
+    uses: tty-pt/ci/.github/workflows/aur.yml@main
+    with:
+      name: 'mingw-w64-gettext'
+    secrets: *aur_secrets
+
   zlib:
-    uses: tty-pt/ci/.github/workflows/aur.yml@msys
+    uses: tty-pt/ci/.github/workflows/aur.yml@main
     with:
       name: 'mingw-w64-zlib'
     secrets: *aur_secrets
 
   libpng:
     needs: [configure, zlib]
-    uses: tty-pt/ci/.github/workflows/aur.yml@msys
+    uses: tty-pt/ci/.github/workflows/aur.yml@main
     with:
       name: 'mingw-w64-libpng'
       deps: 'mingw-w64-configure,mingw-w64-zlib'
@@ -83,7 +94,7 @@ jobs:
 
   cmake:
     needs: [environment, pkg-config]
-    uses: tty-pt/ci/.github/workflows/aur.yml@msys
+    uses: tty-pt/ci/.github/workflows/aur.yml@main
     with:
       name: 'mingw-w64-cmake'
       deps: 'mingw-w64-environment,mingw-w64-pkg-config'
@@ -91,21 +102,21 @@ jobs:
 
   glfw:
     needs: cmake
-    uses: tty-pt/ci/.github/workflows/aur.yml@msys
+    uses: tty-pt/ci/.github/workflows/aur.yml@main
     with:
       name: 'mingw-w64-glfw'
       deps: 'mingw-w64-cmake'
     secrets: *aur_secrets
 
   py-ldd:
-    uses: tty-pt/ci/.github/workflows/aur.yml@msys
+    uses: tty-pt/ci/.github/workflows/aur.yml@main
     with:
       name: 'python-mingw-ldd'
     secrets: *aur_secrets
 
   ntldd:
     needs: py-ldd
-    uses: tty-pt/ci/.github/workflows/aur.yml@msys
+    uses: tty-pt/ci/.github/workflows/aur.yml@main
     with:
       name: 'mingw-w64-ldd'
       deps: 'python-mingw-ldd'
