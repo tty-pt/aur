@@ -76,6 +76,23 @@ jobs:
     uses: tty-pt/ci/.github/workflows/aur.yml@main
     with:
       name: 'mingw-w64-gettext'
+      deps: 'mingw-w64-configure,mingw-w64-libunistring,mingw-w64-termcap'
+    secrets: *aur_secrets
+
+  mman:
+    needs: [cmake]
+    uses: tty-pt/ci/.github/workflows/aur.yml@main
+    with:
+      name: 'mingw-w64-mman-win32-git'
+      deps: 'mingw-w64-environment,mingw-w64-cmake,mingw-w64-crt'
+    secrets: *aur_secrets
+
+  glew:
+    needs: [cmake]
+    uses: tty-pt/ci/.github/workflows/aur.yml@main
+    with:
+      name: 'mingw-w64-glew'
+      deps: 'mingw-w64-cmake,mingw-w64-crt'
     secrets: *aur_secrets
 
   zlib:
