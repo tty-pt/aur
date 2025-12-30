@@ -138,3 +138,11 @@ jobs:
       name: 'mingw-w64-ldd'
       deps: 'python-mingw-ldd'
     secrets: *aur_secrets
+
+  openssl:
+    needs: [environment,zlib]
+    uses: tty-pt/ci/.github/workflows/aur.yml@main
+    with:
+      name: 'mingw-w64-openssl'
+      deps: 'mingw-w64-environment,mingw-w64-zlib'
+    secrets: *aur_secrets
