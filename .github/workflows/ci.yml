@@ -146,3 +146,66 @@ jobs:
       name: 'mingw-w64-openssl'
       deps: 'mingw-w64-environment,mingw-w64-zlib'
     secrets: *aur_secrets
+
+  vulkan-headers:
+    needs: [cmake]
+    uses: tty-pt/ci/.github/workflows/aur.yml@main
+    with:
+      name: 'mingw-w64-vulkan-headers'
+      deps: 'mingw-w64-cmake'
+    secrets: *aur_secrets
+
+  vulkan-icd-loader:
+    needs: [vulkan-headers,cmake]
+    uses: tty-pt/ci/.github/workflows/aur.yml@main
+    with:
+      name: 'mingw-w64-vulkan-icd-loader'
+      deps: 'mingw-w64-vulkan-headers,mingw-w64-cmake'
+    secrets: *aur_secrets
+
+  spirv-headers:
+    needs: [cmake]
+    uses: tty-pt/ci/.github/workflows/aur.yml@main
+    with:
+      name: 'mingw-w64-spirv-headers'
+      deps: 'mingw-w64-cmake'
+    secrets: *aur_secrets
+
+  spirv-tools:
+    needs: [spirv-headers,cmake]
+    uses: tty-pt/ci/.github/workflows/aur.yml@main
+    with:
+      name: 'mingw-w64-spirv-tools'
+      deps: 'mingw-w64-spirv-headers,mingw-w64-cmake'
+    secrets: *aur_secrets
+
+  wine:
+    needs: []
+    uses: tty-pt/ci/.github/workflows/aur.yml@main
+    with:
+      name: 'mingw-w64-wine'
+    secrets: *aur_secrets
+
+  glslang:
+    needs: [cmake,spirv-tools,wine]
+    uses: tty-pt/ci/.github/workflows/aur.yml@main
+    with:
+      name: 'mingw-w64-glslang'
+      deps: 'mingw-w64-cmake,mingw-w64-spirv-tools,mingw-w64-wine'
+    secrets: *aur_secrets
+
+  volk:
+    needs: [vulkan-headers,vulkan-icd-loader]
+    uses: tty-pt/ci/.github/workflows/aur.yml@main
+    with:
+      name: 'mingw-w64-volk'
+      deps: 'mingw-w64-vulkan-icd-loader,mingw-w64-vulkan-headers'
+    secrets: *aur_secrets
+
+  vulkan-tools:
+    needs: [vulkan-icd-loader,cmake,glslang,spirv-tools,volk,vulkan-headers,wine]
+    uses: tty-pt/ci/.github/workflows/aur.yml@main
+    with:
+      name: 'mingw-w64-vulkan-tools'
+      deps: 'mingw-w64-vulkan-icd-loader,mingw-w64-cmake,mingw-w64-glslang,mingw-w64-spirv-tools,mingw-w64-volk,mingw-w64-vulkan-headers,mingw-w64-wine'
+    secrets: *aur_secrets
